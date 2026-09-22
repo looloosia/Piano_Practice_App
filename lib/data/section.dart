@@ -4,6 +4,8 @@ class Section {
   String title;
   int sortOrder;
   final DateTime createdAt;
+  int currentCount;
+  int targetCount;
 
   Section({
     required this.id,
@@ -11,5 +13,7 @@ class Section {
     required this.title,
     required this.sortOrder,
     required this.createdAt,
+    required this.currentCount,
+    required this.targetCount
   });
 }

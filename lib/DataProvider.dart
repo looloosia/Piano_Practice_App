@@ -25,6 +25,17 @@ class DataProvider with ChangeNotifier {
 
   void addSections(List<Section> sections) {
     this.sections.addAll(sections);
+    notifyListeners();
+  }
+
+  List<Section> getSections(String pieceId) {
+    List<Section> newSections = [];
+    for (var section in sections) {
+      if (section.pieceId == pieceId) {
+        newSections.add(section);
+      }
+    }
+    return newSections;
   }
 
   void editPieceTitle(String pieceId, String title) {
@@ -34,6 +45,11 @@ class DataProvider with ChangeNotifier {
 
   void editSectionTitle(String sectionId, String title) {
     sections.where((p) => p.id == sectionId).first.title = title;
+    notifyListeners();
+  }
+
+  void editSectionGoalCount(String sectionId, int goalCount) {
+    sections.where((p) => p.id == sectionId).first.targetCount = goalCount;
     notifyListeners();
   }
 
