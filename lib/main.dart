@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:piano_practice_app/DataProvider.dart';
+import 'package:piano_practice_app/piece_database.dart';
 import 'package:piano_practice_app/screen/root_screen.dart';
 import 'package:provider/provider.dart';
 
-void main() {
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+  await PieceDatabase.instance.initDatabase();
   runApp(const MyApp());
 }
 

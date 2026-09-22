@@ -3,14 +3,16 @@ import 'package:flutter_provider/flutter_provider.dart';
 import 'package:piano_practice_app/data/piece.dart';
 import 'package:piano_practice_app/data/practice_record.dart';
 import 'package:piano_practice_app/data/section.dart';
+import 'package:piano_practice_app/piece_database.dart';
 
 class DataProvider with ChangeNotifier {
   List<Piece> pieces = [];
   List<Section> sections = [];
   List<PracticeRecord> practiceRecords = [];
 
-  void addPiece(Piece piece) {
+  void addPiece(Piece piece) async {
     pieces.add(piece);
+    await PieceDatabase.instance.insertPiece(piece);
     notifyListeners();
   }
 
@@ -23,8 +25,9 @@ class DataProvider with ChangeNotifier {
     return null;
   }
 
-  void addSections(List<Section> sections) {
+  void addSections(List<Section> sections) async {
     this.sections.addAll(sections);
+    await PieceDatabase.instance.insertSections(sections);
     notifyListeners();
   }
 
@@ -38,28 +41,33 @@ class DataProvider with ChangeNotifier {
     return newSections;
   }
 
-  void editPieceTitle(String pieceId, String title) {
+  void editPieceTitle(String pieceId, String title) async {
     pieces.where((p) => p.id == pieceId).first.title = title;
+    await PieceDatabase.instance.updatePieceTitle(pieceId, title);
     notifyListeners();
   }
 
-  void editSectionTitle(String sectionId, String title) {
+  void editSectionTitle(String sectionId, String title) async {
     sections.where((p) => p.id == sectionId).first.title = title;
+    await PieceDatabase.instance.updateSectionTitle(sectionId, title);
     notifyListeners();
   }
 
-  void editSectionGoalCount(String sectionId, int goalCount) {
+  void editSectionGoalCount(String sectionId, int goalCount) async {
     sections.where((p) => p.id == sectionId).first.targetCount = goalCount;
+    await PieceDatabase.instance.updateSectionTargetCount(sectionId, goalCount);
     notifyListeners();
   }
 
-  void removePiece(String id) {
+  void removePiece(String id) async {
     pieces.removeWhere((p) => p.id == id);
+    await PieceDatabase.instance.deletePiece(id);
     notifyListeners();
   }
 
-  void removeSection(String sectionId) {
+  void removeSection(String sectionId) async {
     sections.removeWhere((p) => p.id == sectionId);
+    await PieceDatabase.instance.deleteSection(sectionId);
     notifyListeners();
   }
 }

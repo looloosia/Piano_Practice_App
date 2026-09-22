@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:piano_practice_app/DataProvider.dart';
 import 'package:piano_practice_app/data/piece.dart';
 import 'package:piano_practice_app/data/section.dart';
+import 'package:piano_practice_app/piece_database.dart';
 import 'package:provider/provider.dart';
 
 class SectionsScreen extends StatefulWidget {
@@ -225,6 +226,7 @@ class _SectionsScreenState extends State<SectionsScreen>
                 BuildContext context,
                 StateSetter setDialogState,
                 ) {
+              final provider = context.read<DataProvider>();
               final int currentCount = section.currentCount;
               final int targetCount = section.targetCount;
 
@@ -242,9 +244,10 @@ class _SectionsScreenState extends State<SectionsScreen>
                       _CountButton(
                         icon: Icons.remove_rounded,
                         onPressed: () {
-                          setDialogState(() {
+                          setDialogState(() async {
                             if (currentCount > 0) {
                               section.currentCount--;
+                              await PieceDatabase.instance.updateSectionCurrentCount(section.id, section.currentCount);
                             }
                           });
                         },
@@ -267,8 +270,9 @@ class _SectionsScreenState extends State<SectionsScreen>
                       _CountButton(
                         icon: Icons.add_rounded,
                         onPressed: () {
-                          setDialogState(() {
+                          setDialogState(() async {
                             section.currentCount++;
+                            await PieceDatabase.instance.updateSectionCurrentCount(section.id, section.currentCount);
                           });
                         },
                       ),
