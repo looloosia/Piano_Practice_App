@@ -250,31 +250,43 @@ class _SectionsScreenState extends State<SectionsScreen>
 
                     Center(
                       child: IconButton(
-                        icon: _isRecording ? Icon(Icons.stop) : Icon(Icons.mic),
-                        onPressed: () {
-                          setDialogState(() {
-                            _isRecording = !_isRecording;
-                          });
-                          if (_isRecording)  {
-                            stopRecording();
+                        icon: Icon(
+                          _isRecording
+                              ? Icons.stop
+                              : Icons.mic,
+                        ),
+                        onPressed: () async {
+                          if (_isRecording) {
+                            await stopRecording();
+
+                            setDialogState(() {
+                              _isRecording = false;
+                            });
                           } else {
-                            startRecording();
+                            await startRecording();
+
+                            setDialogState(() {
+                              _isRecording = true;
+                            });
                           }
                         },
                       ),
                     ),
-                    _isRecording ? AudioWaveforms(
-                      size: Size(
-                        MediaQuery.of(context).size.width,
-                        100,
+
+                    if (_isRecording)
+                      AudioWaveforms(
+                        size: Size(
+                          MediaQuery.of(context).size.width,
+                          100,
+                        ),
+                        recorderController: _recorderController,
+                        waveStyle: WaveStyle(
+                          waveColor:
+                          Theme.of(context).colorScheme.primary,
+                          extendWaveform: true,
+                          showMiddleLine: false,
+                        ),
                       ),
-                      recorderController: _recorderController,
-                      waveStyle: WaveStyle(
-                        waveColor: Theme.of(context).colorScheme.primary,
-                        extendWaveform: true,
-                        showMiddleLine: false,
-                      ),
-                    ) : Center(),
 
                     const SizedBox(height: 8),
                     Row(
