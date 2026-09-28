@@ -189,6 +189,8 @@ class _SectionsScreenState extends State<SectionsScreen>
       BuildContext context,
       Section section,
       ) {
+    final provider = Provider.of<DataProvider>(context, listen: false);
+    bool isEditingMemo = false;
     return showDialog<void>(
       context: context,
       builder: (BuildContext context) {
@@ -233,96 +235,135 @@ class _SectionsScreenState extends State<SectionsScreen>
               final double progress =
               (currentCount / targetCount).clamp(0.0, 1.0);
 
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const SizedBox(height: 8),
+              return SingleChildScrollView(
+                child:Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const SizedBox(height: 8),
 
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      _CountButton(
-                        icon: Icons.remove_rounded,
-                        onPressed: () {
-                          setDialogState(() async {
-                            if (currentCount > 0) {
-                              section.currentCount--;
-                              await PieceDatabase.instance.updateSectionCurrentCount(section.id, section.currentCount);
-                            }
-                          });
-                        },
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _CountButton(
+                          icon: Icons.remove_rounded,
+                          onPressed: () async {
+                            setDialogState(() {
+                              if (currentCount > 0) {
+                                section.currentCount--;
 
-                      SizedBox(
-                        width: 90,
-                        child: Text(
-                          section.currentCount.toString(),
-                          textAlign: TextAlign.center,
-                          style: Theme.of(context)
-                              .textTheme
-                              .displaySmall
-                              ?.copyWith(
-                            fontWeight: FontWeight.w700,
+                              }
+                            });
+                            await PieceDatabase.instance.updateSectionCurrentCount(section.id, section.currentCount);
+                          },
+                        ),
+
+                        SizedBox(
+                          width: 90,
+                          child: Text(
+                            section.currentCount.toString(),
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context)
+                                .textTheme
+                                .displaySmall
+                                ?.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ),
-                      ),
 
-                      _CountButton(
-                        icon: Icons.add_rounded,
-                        onPressed: () {
-                          setDialogState(() async {
-                            section.currentCount++;
+                        _CountButton(
+                          icon: Icons.add_rounded,
+                          onPressed: () async {
+                            setDialogState(() {
+                              section.currentCount++;
+                            });
                             await PieceDatabase.instance.updateSectionCurrentCount(section.id, section.currentCount);
-                          });
-                        },
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  Row(
-                    mainAxisAlignment:
-                    MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        '연습 진행도',
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodyMedium
-                            ?.copyWith(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onSurfaceVariant,
+                          },
                         ),
-                      ),
-                      Text(
-                        '${section.currentCount} / ${section.targetCount}',
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodyMedium
-                            ?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 8),
-
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: LinearProgressIndicator(
-                      value: progress,
-                      minHeight: 10,
-                      backgroundColor: Theme.of(context)
-                          .colorScheme
-                          .surfaceContainerHighest,
+                      ],
                     ),
-                  ),
 
-                  const SizedBox(height: 8),
-                ],
+                    const SizedBox(height: 24),
+
+                    Row(
+                      mainAxisAlignment:
+                      MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          '연습 진행도',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.copyWith(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurfaceVariant,
+                          ),
+                        ),
+                        Text(
+                          '${section.currentCount} / ${section.targetCount}',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium
+                              ?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: LinearProgressIndicator(
+                        value: progress,
+                        minHeight: 10,
+                        backgroundColor: Theme.of(context)
+                            .colorScheme
+                            .surfaceContainerHighest,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Text('메모'),
+                        IconButton(
+                          icon: Icon(Icons.edit),
+                          onPressed: () {
+                            setDialogState(() {
+                              isEditingMemo = true;
+                              if (section.memo == null) {
+                                _tfController.text = '';
+                              } else {
+                                _tfController.text = section.memo!;
+                              }
+                            });
+                          },
+                        )
+                      ],
+                    ),
+
+                    const SizedBox(height: 8),
+                    SizedBox(
+                      height: 120,
+                      child: isEditingMemo ? TextField(
+
+                        controller: _tfController,
+                        onSubmitted: (value) {
+                          provider.editSectionMemo(section.id, _tfController.text);
+                          setDialogState(() {
+                            isEditingMemo = false;
+                          });
+
+                        },
+                      ) : Text(
+                        section.memo == null ? '' : section.memo!
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                ),
               );
             },
           ),
@@ -334,6 +375,8 @@ class _SectionsScreenState extends State<SectionsScreen>
                 onPressed: () {
                   setState(() {});
                   Navigator.of(context).pop();
+                  provider.editSectionMemo(section.id, _tfController.text);
+                  _tfController.clear();
                 },
                 child: const Text('완료'),
               ),

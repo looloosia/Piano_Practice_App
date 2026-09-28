@@ -21,7 +21,7 @@ class PieceDatabase {
 
     return openDatabase(
       path,
-      version: 1,
+      version: 2,
 
       // SQLite에서 FOREIGN KEY 사용
       onConfigure: (db) async {
@@ -56,6 +56,7 @@ class PieceDatabase {
         createdAt INTEGER NOT NULL,
         currentCount INTEGER NOT NULL,
         targetCount INTEGER NOT NULL,
+        memo TEXT,
 
         FOREIGN KEY (pieceId)
           REFERENCES pieces(id)
@@ -149,6 +150,7 @@ class PieceDatabase {
         'createdAt': section.createdAt.millisecondsSinceEpoch,
         'currentCount': section.currentCount,
         'targetCount': section.targetCount,
+        'memo': section.memo,
       },
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
@@ -172,6 +174,7 @@ class PieceDatabase {
           'createdAt': section.createdAt.millisecondsSinceEpoch,
           'currentCount': section.currentCount,
           'targetCount': section.targetCount,
+          'memo': section.memo,
         },
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
@@ -190,6 +193,22 @@ class PieceDatabase {
       'sections',
       {
         'title': title,
+      },
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<void> updateSectionMemo(
+      String id,
+      String memo,
+      ) async {
+    final db = await _database;
+
+    await db.update(
+      'sections',
+      {
+        'memo': memo,
       },
       where: 'id = ?',
       whereArgs: [id],
@@ -261,6 +280,7 @@ class PieceDatabase {
         ),
         currentCount: row['currentCount'] as int,
         targetCount: row['targetCount'] as int,
+        memo: row['memo'] as String?,
       );
     }).toList();
   }
@@ -284,6 +304,7 @@ class PieceDatabase {
         ),
         currentCount: row['currentCount'] as int,
         targetCount: row['targetCount'] as int,
+        memo: row['memo'] as String?,
       );
     }).toList();
   }

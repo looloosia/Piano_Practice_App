@@ -10,6 +10,13 @@ class DataProvider with ChangeNotifier {
   List<Section> sections = [];
   List<PracticeRecord> practiceRecords = [];
 
+  Future<void> loadData() async {
+    pieces = await PieceDatabase.instance.loadPieces();
+    sections = await PieceDatabase.instance.loadAllSections();
+
+    notifyListeners();
+  }
+
   void addPiece(Piece piece) async {
     pieces.add(piece);
     await PieceDatabase.instance.insertPiece(piece);
@@ -50,6 +57,12 @@ class DataProvider with ChangeNotifier {
   void editSectionTitle(String sectionId, String title) async {
     sections.where((p) => p.id == sectionId).first.title = title;
     await PieceDatabase.instance.updateSectionTitle(sectionId, title);
+    notifyListeners();
+  }
+
+  void editSectionMemo(String sectionId, String memo) async {
+    sections.where((p) => p.id == sectionId).first.memo = memo;
+    await PieceDatabase.instance.updateSectionMemo(sectionId, memo);
     notifyListeners();
   }
 

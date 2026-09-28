@@ -80,7 +80,7 @@ class _RootScreenState extends State<RootScreen>
         title: Text(
           _selectedIndex == 0
               ? (_selectedPiece == null
-              ? '나의 연습곡'
+              ? '내 연습곡들'
               : _selectedPiece!.title)
               : '연습 기록',
           style: const TextStyle(

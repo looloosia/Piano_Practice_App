@@ -6,6 +6,7 @@ class Section {
   final DateTime createdAt;
   int currentCount;
   int targetCount;
+  String? memo;
 
   Section({
     required this.id,
@@ -14,6 +15,7 @@ class Section {
     required this.sortOrder,
     required this.createdAt,
     required this.currentCount,
-    required this.targetCount
+    required this.targetCount,
+    this.memo
   });
 }
