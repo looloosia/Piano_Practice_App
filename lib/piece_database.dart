@@ -21,7 +21,7 @@ class PieceDatabase {
 
     return openDatabase(
       path,
-      version: 2,
+      version: 1,
 
       // SQLite에서 FOREIGN KEY 사용
       onConfigure: (db) async {

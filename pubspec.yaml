@@ -38,6 +38,8 @@ dependencies:
   flutter_provider: ^2.1.0
   uuid: ^4.6.0
   sqflite: ^2.4.4
+  audio_waveforms: ^2.0.2
+  path_provider: ^2.1.6
 
 dev_dependencies:
   flutter_test:

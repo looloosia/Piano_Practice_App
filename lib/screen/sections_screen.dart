@@ -1,4 +1,6 @@
+import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:piano_practice_app/DataProvider.dart';
 import 'package:piano_practice_app/data/piece.dart';
 import 'package:piano_practice_app/data/section.dart';
@@ -20,22 +22,28 @@ class SectionsScreen extends StatefulWidget {
 class _SectionsScreenState extends State<SectionsScreen>
     with TickerProviderStateMixin {
   late TextEditingController _tfController;
+  late RecorderController _recorderController;
+  bool _isRecording = false;
+  String? _recordingPath;
 
   @override
   void initState() {
     super.initState();
     _tfController = TextEditingController();
+    _recorderController = RecorderController();
   }
 
   @override
   void dispose() {
     _tfController.dispose();
+    _recorderController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<DataProvider>();
+
 
     List<Section> sections = provider.getSections(widget.piece.id)
       ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
@@ -239,8 +247,36 @@ class _SectionsScreenState extends State<SectionsScreen>
                 child:Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const SizedBox(height: 8),
 
+                    Center(
+                      child: IconButton(
+                        icon: _isRecording ? Icon(Icons.stop) : Icon(Icons.mic),
+                        onPressed: () {
+                          setDialogState(() {
+                            _isRecording = !_isRecording;
+                          });
+                          if (_isRecording)  {
+                            stopRecording();
+                          } else {
+                            startRecording();
+                          }
+                        },
+                      ),
+                    ),
+                    _isRecording ? AudioWaveforms(
+                      size: Size(
+                        MediaQuery.of(context).size.width,
+                        100,
+                      ),
+                      recorderController: _recorderController,
+                      waveStyle: WaveStyle(
+                        waveColor: Theme.of(context).colorScheme.primary,
+                        extendWaveform: true,
+                        showMiddleLine: false,
+                      ),
+                    ) : Center(),
+
+                    const SizedBox(height: 8),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -324,43 +360,160 @@ class _SectionsScreenState extends State<SectionsScreen>
                             .surfaceContainerHighest,
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        Text('메모'),
-                        IconButton(
-                          icon: Icon(Icons.edit),
-                          onPressed: () {
-                            setDialogState(() {
-                              isEditingMemo = true;
-                              if (section.memo == null) {
-                                _tfController.text = '';
-                              } else {
-                                _tfController.text = section.memo!;
-                              }
-                            });
-                          },
-                        )
-                      ],
-                    ),
+                    const SizedBox(height: 20),
 
-                    const SizedBox(height: 8),
-                    SizedBox(
-                      height: 120,
-                      child: isEditingMemo ? TextField(
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .surfaceContainerLow,
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                width: 34,
+                                height: 34,
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .primaryContainer,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Icon(
+                                  Icons.sticky_note_2_outlined,
+                                  size: 19,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onPrimaryContainer,
+                                ),
+                              ),
 
-                        controller: _tfController,
-                        onSubmitted: (value) {
-                          provider.editSectionMemo(section.id, _tfController.text);
-                          setDialogState(() {
-                            isEditingMemo = false;
-                          });
+                              const SizedBox(width: 10),
 
-                        },
-                      ) : Text(
-                        section.memo == null ? '' : section.memo!
+                              Expanded(
+                                child: Text(
+                                  '메모',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleSmall
+                                      ?.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+
+                              IconButton(
+                                tooltip: '메모 수정',
+                                visualDensity: VisualDensity.compact,
+                                icon: Icon(
+                                  Icons.edit_outlined,
+                                  size: 20,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .primary,
+                                ),
+                                onPressed: () {
+                                  setDialogState(() {
+                                    isEditingMemo = true;
+
+                                    if (section.memo == null) {
+                                      _tfController.text = '';
+                                    } else {
+                                      _tfController.text = section.memo!;
+                                    }
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 12),
+
+                          if (isEditingMemo)
+                            TextField(
+                              controller: _tfController,
+                              minLines: 3,
+                              maxLines: 5,
+                              decoration: InputDecoration(
+                                hintText: '오늘 연습에서 개선할 점을 적어보세요.',
+                                hintStyle: TextStyle(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant
+                                      .withValues(alpha: 0.65),
+                                ),
+                                filled: true,
+                                fillColor: Theme.of(context)
+                                    .colorScheme
+                                    .surface,
+                                contentPadding: const EdgeInsets.all(14),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                  borderSide: BorderSide.none,
+                                ),
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                  borderSide: BorderSide.none,
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(14),
+                                  borderSide: BorderSide(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .primary,
+                                    width: 1.5,
+                                  ),
+                                ),
+                              ),
+                              onSubmitted: (value) {
+                                provider.editSectionMemo(
+                                  section.id,
+                                  _tfController.text,
+                                );
+
+                                setDialogState(() {
+                                  isEditingMemo = false;
+                                });
+                              },
+                            )
+                          else
+                            Container(
+                              width: double.infinity,
+                              constraints: const BoxConstraints(
+                                minHeight: 60,
+                              ),
+                              alignment: Alignment.topLeft,
+                              child: Text(
+                                section.memo == null ||
+                                    section.memo!.trim().isEmpty
+                                    ? '아직 작성된 메모가 없습니다.'
+                                    : section.memo!,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyMedium
+                                    ?.copyWith(
+                                  height: 1.5,
+                                  color: section.memo == null ||
+                                      section.memo!.trim().isEmpty
+                                      ? Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant
+                                      : Theme.of(context)
+                                      .colorScheme
+                                      .onSurface,
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                     ),
+
                     const SizedBox(height: 8),
                   ],
                 ),
@@ -587,6 +740,31 @@ class _SectionsScreenState extends State<SectionsScreen>
       },
     );
   }
+
+  Future<void> startRecording() async {
+    final directory =
+    await getApplicationCacheDirectory();
+
+    final path =
+        '${directory.path}/recording_${DateTime.now().millisecondsSinceEpoch}.m4a';
+
+    await _recorderController.record(
+      path: path,
+    );
+
+    setState(() {
+      _recordingPath = path;
+    });
+  }
+
+  Future<void> stopRecording() async {
+    final path =
+    await _recorderController.stop();
+
+    setState(() {
+      _recordingPath = path;
+    });
+  }
 }
 
 class _CountButton extends StatelessWidget {
@@ -620,3 +798,4 @@ class _CountButton extends StatelessWidget {
     );
   }
 }
+
