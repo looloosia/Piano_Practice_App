@@ -35,7 +35,9 @@ class _PiecesScreenState extends State<PiecesScreen> {
     final provider = context.watch<DataProvider>();
     final colorScheme = Theme.of(context).colorScheme;
 
-    return ListView.builder(
+    return provider.pieces.isEmpty ? Center(
+      child: Text('새 연습곡을 추가해 보세요'),
+    ) : ListView.builder(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
       itemCount: provider.pieces.length,
       itemBuilder: (context, index) {

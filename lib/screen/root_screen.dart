@@ -3,6 +3,7 @@ import 'package:piano_practice_app/DataProvider.dart';
 import 'package:piano_practice_app/data/piece.dart';
 import 'package:piano_practice_app/data/section.dart';
 import 'package:piano_practice_app/screen/pieces_screen.dart';
+import 'package:piano_practice_app/screen/records_screen.dart';
 import 'package:piano_practice_app/screen/sections_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
@@ -63,7 +64,7 @@ class _RootScreenState extends State<RootScreen>
         centerTitle: false,
         scrolledUnderElevation: 0,
 
-        leading: (_selectedPiece != null)
+        leading: (_selectedPiece != null && _selectedIndex == 0)
             ? IconButton(
           tooltip: '뒤로',
           icon: const Icon(
@@ -124,9 +125,7 @@ class _RootScreenState extends State<RootScreen>
           piece: _selectedPiece!,
         ),
 
-        const Center(
-          child: Text('연습 기록'),
-        ),
+        RecordsScreen()
       ][_selectedIndex],
 
       floatingActionButton: _selectedIndex == 0

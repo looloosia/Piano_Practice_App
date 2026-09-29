@@ -257,12 +257,16 @@ class _SectionsScreenState extends State<SectionsScreen>
                         ),
                         onPressed: () async {
                           if (_isRecording) {
-                            await stopRecording();
 
                             setDialogState(() {
                               _isRecording = false;
                             });
+                            await stopRecording();
+
+
                           } else {
+
+
                             await startRecording();
 
                             setDialogState(() {
@@ -764,18 +768,14 @@ class _SectionsScreenState extends State<SectionsScreen>
       path: path,
     );
 
-    setState(() {
-      _recordingPath = path;
-    });
+    _recordingPath = path;
   }
 
   Future<void> stopRecording() async {
     final path =
     await _recorderController.stop();
 
-    setState(() {
-      _recordingPath = path;
-    });
+    _recordingPath = path;
   }
 }
 
